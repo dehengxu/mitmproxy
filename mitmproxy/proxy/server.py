@@ -271,6 +271,17 @@ class ConnectionHandler(metaclass=abc.ABCMeta):
         self.wakeup_timer.discard(task)
         await self.server_event(events.Wakeup(request))
 
+    async def throttle(self, command: commands.Throttle) -> None:
+        """
+        Wait for the given delay and then let the flow continue.
+
+        This implements the bandwidth limit: the layer yields a Throttle command
+        in between two chunks of a message body, and we resume the flow once
+        the chunk had time to "travel" to the client.
+        """
+        await asyncio.sleep(command.delay)
+        await self.server_event(events.ThrottleCompleted(command))
+
     async def handle_connection(self, connection: Connection) -> None:
         """
         Handle a connection for its entire lifetime.
@@ -408,6 +419,13 @@ class ConnectionHandler(metaclass=abc.ABCMeta):
                         )
                         assert task is not None
                         self.wakeup_timer.add(task)
+                    elif isinstance(command, commands.Throttle):
+                        asyncio_utils.create_task(
+                            self.throttle(command),
+                            name=f"throttle ({command.delay:.1f}s)",
+                            keep_ref=True,
+                            client=self.client.peername,
+                        )
                     elif (
                         isinstance(command, commands.ConnectionCommand)
                         and command.connection not in self.transports

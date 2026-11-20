@@ -26,6 +26,7 @@ from mitmproxy.addons import serverplayback
 from mitmproxy.addons import stickyauth
 from mitmproxy.addons import stickycookie
 from mitmproxy.addons import strip_dns_https_records
+from mitmproxy.addons import throttle
 from mitmproxy.addons import tlsconfig
 from mitmproxy.addons import update_alt_svc
 from mitmproxy.addons import upstream_auth
@@ -61,6 +62,7 @@ def default_addons():
         stickycookie.StickyCookie(),
         save.Save(),
         savehar.SaveHar(),
+        throttle.Throttle(),
         tlsconfig.TlsConfig(),
         upstream_auth.UpstreamAuth(),
         update_alt_svc.UpdateAltSvc(),

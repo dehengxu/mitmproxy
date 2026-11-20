@@ -55,6 +55,25 @@ class RequestWakeup(Command):
         self.delay = delay
 
 
+class Throttle(Command):
+    """
+    Pause the current flow for the given number of seconds.
+
+    This is used to implement bandwidth throttling: a layer yields this command
+    in between two chunks of a message body, and the proxy server resumes the
+    flow once the delay has elapsed.
+    """
+
+    blocking = True
+    """The flow is paused until the proxy server has completed the delay."""
+
+    delay: float
+    """The number of seconds to wait."""
+
+    def __init__(self, delay: float):
+        self.delay = delay
+
+
 class ConnectionCommand(Command):
     """
     Commands involving a specific connection

@@ -116,6 +116,16 @@ class HookCompleted(CommandCompleted):
     reply: None = None
 
 
+@dataclass(repr=False)
+class ThrottleCompleted(CommandCompleted):
+    """
+    Sent when a throttle command has completed, i.e. the flow may continue.
+    """
+
+    command: commands.Throttle
+    reply: None = None
+
+
 T = TypeVar("T")
 
 

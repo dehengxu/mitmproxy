@@ -324,6 +324,9 @@ class HttpStream(layer.Layer):
                 if self.context.options.store_streamed_bodies:
                     self.request_body_buf += chunk
                 yield SendHttp(RequestData(self.stream_id, chunk), self.context.server)
+                delay = self.throttle_delay(len(chunk))
+                if delay:
+                    yield commands.Throttle(delay)
         elif isinstance(event, RequestTrailers):
             # we don't do anything further here, we wait for RequestEndOfMessage first to trigger the request hook.
             self.flow.request.trailers = event.trailers
@@ -429,6 +432,16 @@ class HttpStream(layer.Layer):
         else:
             self.server_state = self.state_consume_response_body
 
+    def throttle_delay(self, nbytes: int) -> float:
+        """
+        The number of seconds to wait before sending the next chunk of `nbytes`
+        bytes, based on the configured bandwidth limit. Zero means no limit.
+        """
+        rate = getattr(self.context.options, "throttle_bytes_per_sec", 0)
+        if not rate:
+            return 0.0
+        return nbytes / rate
+
     def start_response_stream(self) -> layer.CommandGenerator[None]:
         assert self.flow.response
         yield SendHttp(
@@ -454,6 +467,9 @@ class HttpStream(layer.Layer):
                 if self.context.options.store_streamed_bodies:
                     self.response_body_buf += chunk
                 yield SendHttp(ResponseData(self.stream_id, chunk), self.context.client)
+                delay = self.throttle_delay(len(chunk))
+                if delay:
+                    yield commands.Throttle(delay)
         elif isinstance(event, ResponseTrailers):
             self.flow.response.trailers = event.trailers
             # will be sent in send_response() after the response hook.

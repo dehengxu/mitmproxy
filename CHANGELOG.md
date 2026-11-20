@@ -7,6 +7,10 @@
 
 ## Unreleased: mitmproxy next
 
+- Add a bandwidth throttle and an artificial latency. `throttle_bytes_per_sec` limits the
+  transfer rate of request and response bodies, `throttle_latency_ms` adds a fixed delay to
+  every request. This is the equivalent of Charles' "Throttle" feature, which mitmproxy did
+  not have.
 - mitmweb: Add a clear button to the filter inputs (`Search`, `Highlight`, `Intercept`).
   ([#8626](https://github.com/mitmproxy/mitmproxy/pull/8626), @Anto1368)
 - Show the traceback when client replay crashes.
