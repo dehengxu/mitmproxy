@@ -13,12 +13,16 @@ import sys
 from collections.abc import Callable
 from collections.abc import Sequence
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 from typing import Awaitable
 from typing import ClassVar
 from typing import Concatenate
 from typing import Literal
 from typing import Optional
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
 
 import tornado.escape
 import tornado.web
@@ -823,6 +827,84 @@ class SaveOptions(RequestHandler):
         pass
 
 
+class CertificateInfo(RequestHandler):
+    """Information about the mitmproxy CA certificate (REQ-2.1).
+
+    Only public certificate material is exposed here - never the private key.
+    """
+
+    @staticmethod
+    def get_json(master: mitmproxy.tools.web.master.WebMaster) -> dict:
+        tlsconfig = master.addons.get("tlsconfig")
+        certstore = getattr(tlsconfig, "certstore", None)
+        if certstore is None:
+            return {"available": False}
+
+        ca = certstore.default_ca
+        return {
+            "available": True,
+            "subject": ca.subject,
+            "sha256": ca.fingerprint().hex(),
+            "notbefore": int(ca.notbefore.timestamp()),
+            "notafter": int(ca.notafter.timestamp()),
+            "confdir": str(master.options.confdir),
+        }
+
+    def get(self):
+        self.write(CertificateInfo.get_json(self.master))
+
+
+class CertificateExport(RequestHandler):
+    """Export the public CA certificate files into a directory (REQ-2.1).
+
+    We deliberately only export the public certificate artifacts
+    (mitmproxy-ca-cert.pem/.cer/.p12). The CA private key is never written.
+    """
+
+    @staticmethod
+    def export_files(master: mitmproxy.tools.web.master.WebMaster) -> dict[str, bytes]:
+        tlsconfig = master.addons.get("tlsconfig")
+        certstore = getattr(tlsconfig, "certstore", None)
+        if certstore is None:
+            raise APIError(503, "The certificate store is not ready yet.")
+
+        ca = certstore.default_ca
+        pem = ca.to_pem()
+        files = {
+            "mitmproxy-ca-cert.pem": pem,
+            "mitmproxy-ca-cert.cer": pem,
+        }
+        try:
+            files["mitmproxy-ca-cert.p12"] = pkcs12.serialize_key_and_certificates(
+                name=b"mitmproxy",
+                key=None,
+                cert=ca.to_cryptography(),
+                cas=None,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
+        except Exception as e:  # pragma: no cover
+            logger.warning(f"Could not serialize CA certificate as p12: {e}")
+        return files
+
+    def post(self):
+        try:
+            target = Path(os.path.expanduser(self.json["path"])).absolute()
+        except KeyError:
+            raise APIError(400, "Missing 'path'.")
+        if not target.is_absolute():
+            raise APIError(400, "'path' must be an absolute path.")
+
+        files = self.export_files(self.master)
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+            for name, content in files.items():
+                (target / name).write_bytes(content)
+        except OSError as e:
+            raise APIError(500, f"Could not write CA certificate: {e}")
+
+        self.write({"path": str(target), "files": sorted(files)})
+
+
 class State(RequestHandler):
     # Separate method for testability.
     @staticmethod
@@ -909,6 +991,8 @@ handlers = [
     (r"/options(?:\.json)?", Options),
     (r"/options/save", SaveOptions),
     (r"/state(?:\.json)?", State),
+    (r"/cert(?:\.json)?", CertificateInfo),
+    (r"/cert/export", CertificateExport),
     (r"/processes", ProcessList),
     (r"/executable-icon", ProcessImage),
 ]  # fmt: skip

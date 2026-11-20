@@ -5,6 +5,7 @@ import Icon from "../common/Icon";
 import * as flowsActions from "../../ducks/flows";
 import HideInStatic from "../common/HideInStatic";
 import { useAppDispatch, useAppSelector } from "../../ducks";
+import * as modalActions from "../../ducks/ui/modal";
 import { FilterName } from "../../ducks/ui/filter";
 
 export default React.memo(function FileMenu() {
@@ -53,12 +54,18 @@ export default React.memo(function FileMenu() {
             </MenuItem>
             <HideInStatic>
                 <Divider />
-                <li>
-                    <a href="http://mitm.it/" target="_blank" rel="noreferrer">
-                        <Icon name="external" />
-                        &nbsp;Install Certificates
-                    </a>
-                </li>
+                <MenuItem
+                    onClick={() =>
+                        dispatch(
+                            modalActions.setActiveModal(
+                                "CertificateGuideModal",
+                            ),
+                        )
+                    }
+                >
+                    <Icon name="shield" />
+                    &nbsp;Install Certificates
+                </MenuItem>
             </HideInStatic>
         </Dropdown>
     );

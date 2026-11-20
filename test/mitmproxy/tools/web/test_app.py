@@ -1,5 +1,6 @@
 import gzip
 import importlib
+import tempfile
 import json
 import logging
 from pathlib import Path
@@ -560,6 +561,52 @@ class TestApp(tornado.testing.AsyncHTTPTestCase):
             self.assertIsNone(response)
             self.assertEqual(ws_client.close_code, 1011)
             self.assertEqual(ws_client.close_reason, "Internal server error.")
+
+    def _init_certstore(self) -> Path:
+        """Give the tlsconfig addon a scratch confdir so that it builds a CA."""
+        confdir = Path(tempfile.mkdtemp())
+        self.master.options.update(confdir=str(confdir))
+        return confdir
+
+    def test_cert_info(self):
+        self._init_certstore()
+        response = self.fetch("/cert.json")
+        assert response.code == 200
+        data = get_json(response)
+        assert data["available"] is True
+        assert len(data["sha256"]) == 64
+        assert "mitmproxy" in str(data["subject"])
+
+    def test_cert_info_without_certstore(self):
+        response = self.fetch("/cert.json")
+        assert response.code == 200
+        assert get_json(response)["available"] is False
+
+    def test_cert_export(self):
+        self._init_certstore()
+        target = Path(tempfile.mkdtemp()) / "certs"
+        response = self.fetch(
+            "/cert/export",
+            method="POST",
+            body=json.dumps({"path": str(target)}),
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.code == 200
+        data = get_json(response)
+        assert data["path"] == str(target)
+        assert "mitmproxy-ca-cert.pem" in data["files"]
+        assert (target / "mitmproxy-ca-cert.pem").exists()
+        # the private key must never be exported.
+        assert not (target / "mitmproxy-ca.pem").exists()
+
+    def test_cert_export_requires_path(self):
+        response = self.fetch(
+            "/cert/export",
+            method="POST",
+            body=json.dumps({}),
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.code == 400
 
     def test_process_list(self):
         try:
