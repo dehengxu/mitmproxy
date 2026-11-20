@@ -17,6 +17,7 @@ import {
 } from "../../flow/utils";
 import { formatSize, formatTimeDelta, formatTimeStamp } from "../../utils";
 import * as flowActions from "../../ducks/flows";
+import { decideFlows } from "../../ducks/rewrite";
 import type { Flow } from "../../flow";
 import type { IconName } from "../common/Icon";
 import Icon from "../common/Icon";
@@ -136,12 +137,48 @@ version.headerName = "Version";
 
 export const status: FlowColumn = ({ flow }) => {
     const code = statusCode(flow);
-    if (code === undefined || code === "") return <td className="col-status" />;
+    if (!flow.intercepted) {
+        if (code === undefined || code === "")
+            return <td className="col-status" />;
+        return (
+            <td className="col-status">
+                <Badge
+                    className={classnames("status-badge", statusClass(code))}
+                >
+                    {code}
+                </Badge>
+            </td>
+        );
+    }
 
+    // A flow a breakpoint holds back has not settled yet. The status column is
+    // where people look for a flow's state, so it carries the marker: the word
+    // Pending when there is no status code yet, and a compact pause icon next to
+    // the code when the flow was held before the response was rewritten.
     return (
         <td className="col-status">
-            <Badge className={classnames("status-badge", statusClass(code))}>
-                {code}
+            {code !== undefined && code !== "" && (
+                <>
+                    <Badge
+                        className={classnames(
+                            "status-badge",
+                            statusClass(code),
+                        )}
+                    >
+                        {code}
+                    </Badge>
+                    &nbsp;
+                </>
+            )}
+            <Badge
+                className={classnames("status-badge suspended-badge", {
+                    "suspended-badge-compact": code !== undefined && code !== "",
+                })}
+                title="Waiting for a decision: execute, abort or cancel"
+                aria-label="Waiting for a decision"
+            >
+                <Icon name="pause" />
+                {(code === undefined || code === "") && <>&nbsp;Pending</>}
             </Badge>
         </td>
     );
@@ -179,14 +216,37 @@ export const quickactions: FlowColumn = ({ flow }) => {
 
     let resume_or_replay: ReactElement<any> | null = null;
     if (flow.intercepted) {
+        // Same three outcomes as the flow menu, so a held flow can be settled
+        // without leaving the table.
+        // The three links stay direct children of the cell's div: the table's
+        // layout sizes and spaces them there, and a wrapper would collapse it.
         resume_or_replay = (
-            <a
-                href="#"
-                className="quickaction"
-                onClick={() => dispatch(flowActions.resume([flow]))}
-            >
-                <Icon name="resume" className="text-success" />
-            </a>
+            <>
+                <a
+                    href="#"
+                    className="quickaction"
+                    title="Execute: apply the edits and let the flow through"
+                    onClick={() => dispatch(decideFlows("execute", [flow]))}
+                >
+                    <Icon name="resume" className="text-success" />
+                </a>
+                <a
+                    href="#"
+                    className="quickaction"
+                    title="Abort: kill the flow, nothing is forwarded to the client"
+                    onClick={() => dispatch(decideFlows("abort", [flow]))}
+                >
+                    <Icon name="abort" className="text-danger" />
+                </a>
+                <a
+                    href="#"
+                    className="quickaction"
+                    title="Cancel: drop the edits and pass the flow through untouched"
+                    onClick={() => dispatch(decideFlows("cancel", [flow]))}
+                >
+                    <Icon name="undo" className="text-warning" />
+                </a>
+            </>
         );
     } else if (canReplay(flow)) {
         resume_or_replay = (

@@ -123,6 +123,41 @@ exports[`FlowRow 1`] = `
           >
             200
           </span>
+           
+          <span
+            aria-label="Waiting for a decision"
+            class="badge status-badge suspended-badge suspended-badge-compact"
+            title="Waiting for a decision: execute, abort or cancel"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-pause icon icon-pause"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="18"
+                rx="1"
+                width="5"
+                x="14"
+                y="3"
+              />
+              <rect
+                height="18"
+                rx="1"
+                width="5"
+                x="5"
+                y="3"
+              />
+            </svg>
+          </span>
         </td>
         <td
           class="col-size"
@@ -141,6 +176,7 @@ exports[`FlowRow 1`] = `
             <a
               class="quickaction"
               href="#"
+              title="Execute: apply the edits and let the flow through"
             >
               <svg
                 aria-hidden="true"
@@ -157,6 +193,58 @@ exports[`FlowRow 1`] = `
               >
                 <path
                   d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                />
+              </svg>
+            </a>
+            <a
+              class="quickaction"
+              href="#"
+              title="Abort: kill the flow, nothing is forwarded to the client"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-x icon icon-abort text-danger"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18 6 6 18"
+                />
+                <path
+                  d="m6 6 12 12"
+                />
+              </svg>
+            </a>
+            <a
+              class="quickaction"
+              href="#"
+              title="Cancel: drop the edits and pass the flow through untouched"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-undo2 lucide-undo-2 icon icon-undo text-warning"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 14 4 9l5-5"
+                />
+                <path
+                  d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"
                 />
               </svg>
             </a>

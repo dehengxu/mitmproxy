@@ -36,6 +36,48 @@ exports[`Header 1`] = `
       >
         Flow
       </a>
+      <a
+        class="pending-decisions-entry has-pending"
+        href="#"
+        title="1 request waiting for a decision"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hourglass icon icon-pending"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 22h14"
+          />
+          <path
+            d="M5 2h14"
+          />
+          <path
+            d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"
+          />
+          <path
+            d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+          />
+        </svg>
+        <span
+          class="pending-decisions-label"
+        >
+          Pending
+        </span>
+        <span
+          class="pending-decisions-count"
+        >
+          1
+        </span>
+      </a>
       <span
         class="connection-indicator established"
       >
@@ -317,57 +359,88 @@ exports[`Header 1`] = `
           <div
             class="menu-content"
           >
-            <button
-              class="btn btn-default"
-              disabled=""
-              title="[a]ccept intercepted flow"
+            <span
+              class="decision-buttons"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-play icon icon-resume text-success"
-                fill="none"
-                height="16"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
+              <button
+                class="btn btn-default"
+                disabled=""
+                title="Apply the edits to this flow and let it through"
               >
-                <path
-                  d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
-                />
-              </svg>
-               Resume
-            </button>
-            <button
-              class="btn btn-default"
-              disabled=""
-              title="kill intercepted flow [x]"
-            >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-x icon icon-abort text-danger"
-                fill="none"
-                height="16"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-play icon icon-resume text-success"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                  />
+                </svg>
+                 Execute
+              </button>
+              <button
+                class="btn btn-default"
+                disabled=""
+                title="Kill this flow, nothing is forwarded to the client"
               >
-                <path
-                  d="M18 6 6 18"
-                />
-                <path
-                  d="m6 6 12 12"
-                />
-              </svg>
-               Abort
-            </button>
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-x icon icon-abort text-danger"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M18 6 6 18"
+                  />
+                  <path
+                    d="m6 6 12 12"
+                  />
+                </svg>
+                 Abort
+              </button>
+              <button
+                class="btn btn-default"
+                disabled=""
+                title="Cancel the breakpoint: drop the edits and let the flow through untouched; the rule stays enabled"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-undo2 lucide-undo-2 icon icon-undo text-warning"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 14 4 9l5-5"
+                  />
+                  <path
+                    d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"
+                  />
+                </svg>
+                 Cancel
+              </button>
+            </span>
           </div>
           <div
             class="menu-legend"
@@ -416,6 +489,48 @@ exports[`Header 2`] = `
         href="#"
       >
         Flow
+      </a>
+      <a
+        class="pending-decisions-entry has-pending"
+        href="#"
+        title="1 request waiting for a decision"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hourglass icon icon-pending"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 22h14"
+          />
+          <path
+            d="M5 2h14"
+          />
+          <path
+            d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"
+          />
+          <path
+            d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+          />
+        </svg>
+        <span
+          class="pending-decisions-label"
+        >
+          Pending
+        </span>
+        <span
+          class="pending-decisions-count"
+        >
+          1
+        </span>
       </a>
       <span
         class="connection-indicator established"
@@ -967,6 +1082,48 @@ exports[`Header 3`] = `
       >
         Flow
       </a>
+      <a
+        class="pending-decisions-entry has-pending"
+        href="#"
+        title="1 request waiting for a decision"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hourglass icon icon-pending"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 22h14"
+          />
+          <path
+            d="M5 2h14"
+          />
+          <path
+            d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"
+          />
+          <path
+            d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+          />
+        </svg>
+        <span
+          class="pending-decisions-label"
+        >
+          Pending
+        </span>
+        <span
+          class="pending-decisions-count"
+        >
+          1
+        </span>
+      </a>
       <span
         class="connection-indicator established"
       >
@@ -1356,6 +1513,48 @@ exports[`Header 4`] = `
         href="#"
       >
         Flow
+      </a>
+      <a
+        class="pending-decisions-entry has-pending"
+        href="#"
+        title="1 request waiting for a decision"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hourglass icon icon-pending"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 22h14"
+          />
+          <path
+            d="M5 2h14"
+          />
+          <path
+            d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"
+          />
+          <path
+            d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+          />
+        </svg>
+        <span
+          class="pending-decisions-label"
+        >
+          Pending
+        </span>
+        <span
+          class="pending-decisions-count"
+        >
+          1
+        </span>
       </a>
       <span
         class="connection-indicator established"

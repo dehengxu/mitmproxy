@@ -6,6 +6,7 @@ import CommandBar from "./CommandBar";
 import EventLog from "./EventLog";
 import Footer from "./Footer";
 import Modal from "./Modal/Modal";
+import DecisionNotice from "./rewrite/DecisionNotice";
 import ThemeManager from "./helpers/ThemeManager";
 import type { RootState } from "../ducks";
 import { connect } from "react-redux";
@@ -64,6 +65,7 @@ class ProxyAppMain extends Component<ProxyAppMainProps, ProxyAppMainState> {
                 {showCommandBar && <CommandBar key="commandbar" />}
                 {showEventLog && <EventLog key="eventlog" />}
                 <Footer />
+                <DecisionNotice key="decision-notice" />
                 <Modal />
             </div>
         );

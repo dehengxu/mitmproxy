@@ -9,6 +9,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Tab } from "../../ducks/ui/tabs";
 import { LogLevel } from "../../ducks/eventLog";
 import { ReverseProxyProtocols } from "../../backends/consts";
+import { defaultState as defaultRewrite } from "../../ducks/rewrite";
 import { defaultReverseState } from "../../modes/reverse";
 import { FilterName } from "../../ducks/ui/filter";
 
@@ -210,6 +211,7 @@ export const testState: RootState = {
         ],
         isLoading: false,
     },
+    rewrite: defaultRewrite,
 };
 
 export function TStore(

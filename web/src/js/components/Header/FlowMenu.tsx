@@ -10,14 +10,14 @@ import HideInStatic from "../common/HideInStatic";
 import { useAppDispatch, useAppSelector } from "../../ducks";
 import {
     duplicate as duplicateFlows,
-    kill as killFlows,
     remove as removeFlows,
     replay as replayFlows,
-    resume as resumeFlows,
     revert as revertFlows,
     mark as markFlows,
 } from "../../ducks/flows";
 import Dropdown, { MenuItem } from "../common/Dropdown";
+import DecisionButtons from "../rewrite/DecisionButtons";
+import { decideFlows } from "../../ducks/rewrite";
 import { copy } from "../../flow/export";
 import type { Flow } from "../../flow";
 
@@ -95,24 +95,12 @@ export default function FlowMenu(): JSX.Element {
             <HideInStatic>
                 <div className="menu-group">
                     <div className="menu-content">
-                        <Button
+                        <DecisionButtons
                             disabled={!canResumeOrKillAny}
-                            title="[a]ccept intercepted flow"
-                            icon="resume"
-                            iconClassName="text-success"
-                            onClick={() => dispatch(resumeFlows(selectedFlows))}
-                        >
-                            Resume
-                        </Button>
-                        <Button
-                            disabled={!canResumeOrKillAny}
-                            title="kill intercepted flow [x]"
-                            icon="abort"
-                            iconClassName="text-danger"
-                            onClick={() => dispatch(killFlows(selectedFlows))}
-                        >
-                            Abort
-                        </Button>
+                            onDecision={(decision) =>
+                                dispatch(decideFlows(decision, selectedFlows))
+                            }
+                        />
                     </div>
                     <div className="menu-legend">Interception</div>
                 </div>

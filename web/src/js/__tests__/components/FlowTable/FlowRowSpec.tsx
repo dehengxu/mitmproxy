@@ -1,7 +1,7 @@
 import * as React from "react";
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 import FlowRow from "../../../components/FlowTable/FlowRow";
-import { fireEvent, render, screen } from "../../test-utils";
+import { fireEvent, render, screen, waitFor } from "../../test-utils";
 import { TStore } from "../../ducks/tutils";
 
 enableFetchMocks();
@@ -103,8 +103,12 @@ test("the quickactions column selects the row except on a button", async () => {
 
     fireEvent.click(actions0.querySelector(".quickaction")!);
     expect(store.getState().flows.selected).toEqual([tflow3]);
-    expect(fetchMock).toHaveBeenCalledWith(
-        `./flows/${tflow0.id}/resume`,
-        expect.objectContaining({ method: "POST" }),
+    // Deciding a held flow first reads the pending queue, so the resume lands a
+    // turn later than the click.
+    await waitFor(() =>
+        expect(fetchMock).toHaveBeenCalledWith(
+            `./flows/${tflow0.id}/resume`,
+            expect.objectContaining({ method: "POST" }),
+        ),
     );
 });

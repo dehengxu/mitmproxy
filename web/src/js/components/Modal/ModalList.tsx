@@ -3,11 +3,23 @@ import ModalLayout from "./ModalLayout";
 import OptionContent from "./OptionModal";
 import ThrottleModalContent from "./ThrottleModal";
 import CertificateGuideModalContent from "./CertificateGuideModal";
+import PendingDecisionModalContent from "./PendingDecisionModal";
 
 function OptionModal() {
     return (
         <ModalLayout>
             <OptionContent />
+        </ModalLayout>
+    );
+}
+
+function PendingDecisionModal() {
+    return (
+        <ModalLayout
+            id="pendingDecisionModal"
+            labelledBy="pending-decision-title"
+        >
+            <PendingDecisionModalContent />
         </ModalLayout>
     );
 }
@@ -38,4 +50,5 @@ export default {
     OptionModal,
     ThrottleModal,
     CertificateGuideModal,
+    PendingDecisionModal,
 };
