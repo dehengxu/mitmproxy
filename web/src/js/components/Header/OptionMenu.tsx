@@ -75,6 +75,18 @@ export default function OptionMenu() {
                         >
                             Edit Options
                         </Button>
+                        <Button
+                            title="Open Throttle"
+                            icon="gauge"
+                            iconClassName="text-primary"
+                            onClick={() =>
+                                dispatch(
+                                    modalActions.setActiveModal("ThrottleModal"),
+                                )
+                            }
+                        >
+                            Throttle
+                        </Button>
                     </div>
                     <div className="menu-legend">Options Editor</div>
                 </div>

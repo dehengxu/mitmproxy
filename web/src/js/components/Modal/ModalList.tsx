@@ -1,6 +1,7 @@
 import * as React from "react";
 import ModalLayout from "./ModalLayout";
 import OptionContent from "./OptionModal";
+import ThrottleModalContent from "./ThrottleModal";
 
 function OptionModal() {
     return (
@@ -12,4 +13,5 @@ function OptionModal() {
 
 export default {
     OptionModal,
+    ThrottleModal: ThrottleModalContent,
 };
