@@ -144,7 +144,7 @@ export default function CertificateGuideModal() {
                     <Icon name="close" />
                 </button>
                 <div className="modal-title">
-                    <h4>Install Certificates</h4>
+                    <h4 id="certificate-guide-title">Install Certificates</h4>
                 </div>
             </div>
 

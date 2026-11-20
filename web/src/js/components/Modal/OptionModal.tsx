@@ -80,7 +80,7 @@ export default function OptionModal() {
                     <Icon name="close" />
                 </button>
                 <div className="modal-title">
-                    <h4>Options</h4>
+                    <h4 id="options">Options</h4>
                 </div>
             </div>
 

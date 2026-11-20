@@ -32,7 +32,7 @@ export default function ThrottleModal() {
                     <Icon name="close" />
                 </button>
                 <div className="modal-title">
-                    <h4>Throttle</h4>
+                    <h4 id="throttle-title">Throttle</h4>
                 </div>
             </div>
 
