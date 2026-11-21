@@ -11,7 +11,7 @@ exports[`FocusControl renders a snapshot without focus 1`] = `
       <button
         aria-pressed="false"
         class="btn btn-default focus-toggle"
-        title="Focus address and group everything else under Other"
+        title="Focus address and group everything else under Other [f]"
         type="button"
       >
         <svg

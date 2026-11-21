@@ -67,7 +67,7 @@ export default function FocusControl() {
                             ? "Select a flow to focus its host"
                             : alreadyFocused
                               ? `Cancel focus on ${selectedHosts.join(", ")}`
-                              : `Focus ${selectedHosts.join(", ")} and group everything else under Other`
+                              : `Focus ${selectedHosts.join(", ")} and group everything else under Other [f]`
                     }
                 >
                     <Icon name="focus" size={14} />
@@ -95,7 +95,7 @@ export default function FocusControl() {
                             className="focus-chip"
                             onClick={() => dispatch(unfocusHost(host))}
                             aria-label={`Cancel focus on ${host}`}
-                            title={`Focused. Click to cancel and restore the original order.`}
+                            title="Focused. Click to cancel and restore the original order."
                         >
                             <Icon name="focus" size={12} />
                             <span className="focus-chip-label">{host}</span>

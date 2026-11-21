@@ -2,6 +2,7 @@ import { selectTab } from "./flow";
 import * as flowsActions from "../flows";
 import * as modalActions from "./modal";
 import { tabsForFlow } from "../../components/FlowView";
+import { flowHost, toggleFocus } from "./focus";
 import { runCommand } from "../../utils";
 import type { AppDispatch, RootState } from "../store";
 
@@ -129,6 +130,16 @@ export function onKeyDown(e: KeyboardEvent) {
 
             case "z": {
                 dispatch(flowsActions.clear());
+                break;
+            }
+
+            case "f": {
+                // Focus (REQ-4.2): pin the selected flow's host above the rest.
+                // Reordering only -- nothing is hidden.
+                const host = flowHost(flow);
+                if (host) {
+                    dispatch(toggleFocus(host));
+                }
                 break;
             }
 
