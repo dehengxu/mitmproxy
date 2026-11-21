@@ -340,6 +340,98 @@ describe("RewriteRulesModal", () => {
         );
     });
 
+    it("creates a rule inside a set, carrying ruleset_id so it lands in the set", async () => {
+        mockBackend();
+        render(<RewriteRulesModal />);
+        await waitFor(() => screen.getByText("Shop"));
+
+        fireEvent.click(
+            screen.getByRole("button", { name: /New rule in this set/ }),
+        );
+        const editor = await screen.findByTestId("rule-editor");
+        // the editor says which set the rule is being made in
+        expect(within(editor).getByText(/inside a rule set/i)).toBeInTheDocument();
+
+        fireEvent.change(within(editor).getByLabelText("Rule name"), {
+            target: { value: "Made in the set" },
+        });
+        fireEvent.change(within(editor).getByLabelText("Rule filter"), {
+            target: { value: "~u made" },
+        });
+        fireEvent.click(within(editor).getByRole("button", { name: /Add action/ }));
+        fireEvent.change(within(editor).getByLabelText("name"), {
+            target: { value: "x-made" },
+        });
+        fireEvent.change(within(editor).getByLabelText("value"), {
+            target: { value: "1" },
+        });
+
+        fireEvent.click(within(editor).getByRole("button", { name: /Save rule/ }));
+
+        await waitFor(() => expect(mocked.post).toHaveBeenCalled());
+        const [url, body] = mocked.post.mock.calls[0];
+        expect(url).toBe(ENDPOINTS.rules);
+        expect(body.name).toBe("Made in the set");
+        // the defect: without this key the backend files the rule as
+        // standalone and the set stays empty
+        expect(body.ruleset_id).toBe("set-1");
+    });
+
+    it("leaves ruleset_id off a new standalone rule", async () => {
+        mockBackend();
+        render(<RewriteRulesModal />);
+        await waitFor(() => screen.getByText("Solo prices"));
+
+        fireEvent.click(
+            screen.getByRole("button", { name: /New standalone rule/ }),
+        );
+        const editor = await screen.findByTestId("rule-editor");
+
+        fireEvent.change(within(editor).getByLabelText("Rule name"), {
+            target: { value: "Loose rule" },
+        });
+        fireEvent.change(within(editor).getByLabelText("Rule filter"), {
+            target: { value: "~u loose" },
+        });
+        fireEvent.click(within(editor).getByRole("button", { name: /Add action/ }));
+        fireEvent.change(within(editor).getByLabelText("name"), {
+            target: { value: "x-loose" },
+        });
+        fireEvent.change(within(editor).getByLabelText("value"), {
+            target: { value: "1" },
+        });
+        fireEvent.click(within(editor).getByRole("button", { name: /Save rule/ }));
+
+        await waitFor(() => expect(mocked.post).toHaveBeenCalled());
+        const [url, body] = mocked.post.mock.calls[0];
+        expect(url).toBe(ENDPOINTS.rules);
+        // a standalone rule is "the key is absent", not "the key is null"
+        expect(body).not.toHaveProperty("ruleset_id");
+    });
+
+    it("does not move a rule when editing it from inside its set", async () => {
+        mockBackend();
+        render(<RewriteRulesModal />);
+        await waitFor(() => screen.getByText("A wins the header"));
+
+        const memberRow = screen.getByText("A wins the header").closest("tr")!;
+        fireEvent.click(within(memberRow).getByTitle("Edit this rule"));
+
+        const editor = await screen.findByTestId("rule-editor");
+        fireEvent.change(within(editor).getByLabelText("Rule name"), {
+            target: { value: "A renamed" },
+        });
+        fireEvent.click(within(editor).getByRole("button", { name: /Save rule/ }));
+
+        await waitFor(() => expect(mocked.post).toHaveBeenCalled());
+        const [url, body] = mocked.post.mock.calls[0];
+        expect(url).toBe(ENDPOINTS.rules);
+        expect(body.name).toBe("A renamed");
+        // an edit must not change membership; the backend keeps the rule where
+        // it is, and the payload must not try to move it
+        expect(body).not.toHaveProperty("ruleset_id");
+    });
+
     it("shows which rule wins the previewed field and which are skipped", async () => {
         mockBackend();
         render(<RewriteRulesModal />);

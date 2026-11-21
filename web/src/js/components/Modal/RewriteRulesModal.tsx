@@ -137,6 +137,7 @@ export default function RewriteRulesModal() {
             setError(problem);
             return;
         }
+        const isNewRule = !rules.some((rule) => rule.id === draft.id);
         const rule: RewriteRule = {
             id: draft.id,
             name: draft.name.trim(),
@@ -146,6 +147,15 @@ export default function RewriteRulesModal() {
             actions: draft.actions,
             decision: draft.decision,
         };
+        // A new rule made through "New rule in this set" has to be born inside
+        // its set: the backend files a rule by the `ruleset_id` in the payload,
+        // and without it the rule lands among the standalone ones and the set
+        // stays empty. Only a new rule carries the key -- an edit must not move
+        // a rule between sets (membership changes only through the set
+        // commands), so an existing rule is saved exactly as before.
+        if (isNewRule && draftSet) {
+            rule.ruleset_id = draftSet;
+        }
         await run(async () => {
             await dispatch(rewriteActions.saveRule(rule)).unwrap();
             setDraft(null);
