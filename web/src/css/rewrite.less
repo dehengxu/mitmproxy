@@ -132,6 +132,12 @@
             text-decoration: none;
         }
     }
+
+    // A refused decision is not the same thing: the request is still held, so
+    // the row keeps its normal weight and only gets an edge marking it.
+    tr.pending-refused td:first-child {
+        box-shadow: inset 2px 0 0 var(--mitmweb-text-warning);
+    }
 }
 
 .pending-age {

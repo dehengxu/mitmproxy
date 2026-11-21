@@ -179,9 +179,11 @@ export default function PendingDecisionModal() {
                                         <tr
                                             key={entry.token}
                                             className={
-                                                holdReason || refused
+                                                holdReason
                                                     ? "pending-expired"
-                                                    : undefined
+                                                    : refused
+                                                      ? "pending-refused"
+                                                      : undefined
                                             }
                                             data-state={
                                                 holdReason

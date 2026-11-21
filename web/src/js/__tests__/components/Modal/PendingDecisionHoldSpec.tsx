@@ -199,10 +199,13 @@ describe("PendingDecisionModal hold annotation", () => {
         // The row is still there, marked as refused.
         expect(screen.getByText("/api/price")).toBeInTheDocument();
         const refusedRow = rows()[0];
-        expect(refusedRow).toHaveClass("pending-expired");
+        expect(refusedRow).toHaveClass("pending-refused");
+        // Refused is not expired: the request is still held, so it is not greyed.
+        expect(refusedRow).not.toHaveClass("pending-expired");
+        expect(refusedRow).toHaveAttribute("data-state", "pending");
         expect(refusedRow).toHaveTextContent("Decision refused");
         // The other row is untouched.
-        expect(rows()[1]).not.toHaveClass("pending-expired");
+        expect(rows()[1]).not.toHaveClass("pending-refused");
     });
 
     it("reports a client disconnect instead of an unknown error", async () => {
