@@ -282,3 +282,34 @@ body.resizing-columns {
         width: 12px;
     }
 }
+
+// Focus (REQ-4.2) group headers. They take a row of their own so the virtual
+// scroll keeps working in rowHeight units.
+.flow-table tr.flow-group-row {
+    cursor: default;
+    background-color: var(--mitmweb-bg-alt);
+
+    td {
+        padding: 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--mitmweb-fg-muted);
+        border-top: 1px solid var(--mitmweb-border);
+        vertical-align: middle;
+    }
+
+    &.focused td {
+        color: var(--mitmweb-accent);
+    }
+
+    &.other td {
+        color: var(--mitmweb-fg-muted);
+        font-weight: 400;
+    }
+
+    .flow-group-count {
+        margin-left: 6px;
+        font-weight: 400;
+        opacity: 0.75;
+    }
+}

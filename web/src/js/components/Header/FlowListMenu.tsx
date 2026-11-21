@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import { update as updateOptions } from "../../ducks/options";
 import { useAppDispatch, useAppSelector } from "../../ducks";
 import { FilterName, setFilter, setHighlight } from "../../ducks/ui/filter";
+import FocusControl from "./FocusControl";
 
 FlowListMenu.title = "Flow List";
 
@@ -17,6 +18,13 @@ export default function FlowListMenu() {
                     <HighlightInput />
                 </div>
                 <div className="menu-legend">Find</div>
+            </div>
+
+            <div className="menu-group focus-group">
+                <div className="menu-content">
+                    <FocusControl />
+                </div>
+                <div className="menu-legend">Focus</div>
             </div>
 
             <div className="menu-group">

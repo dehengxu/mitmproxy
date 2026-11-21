@@ -10,19 +10,47 @@ import type { AppDispatch, RootState } from "../ducks";
 import { isValidColumnName } from "../flow/utils";
 import type { ColumnWidths } from "../ducks/ui/columnWidths";
 import { commitColumnWidths, setColumnWidths } from "../ducks/ui/columnWidths";
+import { groupByFocus } from "../ducks/ui/focus";
 
 type FlowTableProps = {
     flowView: Flow[];
+    /** Focused hosts, in focus order. Empty means no reordering. */
+    focusHosts: string[];
     rowHeight: number;
     highlightedIds: Set<string>;
     selectedIds: Set<string>;
     onlySelectedId: string | false;
-    firstSelectedIndex: number | undefined;
+    firstSelectedId: string | undefined;
     displayColumnNames: string[];
     listIndex: Map<string, number>;
     columnWidths: ColumnWidths;
     dispatch: AppDispatch;
 };
+
+/**
+ * One rendered row: either a group header or a flow. Focus turns the flat view
+ * into groups (focused hosts first, everything else under Other); group headers
+ * occupy a row of their own so the virtual scroll keeps counting in rowHeight
+ * units. Without focus there are no headers and the list is exactly flowView.
+ */
+type TableRow =
+    | { kind: "group"; group: string; focused: boolean; count: number }
+    | { kind: "flow"; flow: Flow };
+
+export function buildRows(flowView: Flow[], focusHosts: string[]): TableRow[] {
+    if (focusHosts.length === 0) {
+        return flowView.map((flow) => ({ kind: "flow" as const, flow }));
+    }
+    return groupByFocus(flowView, focusHosts).flatMap((g) => [
+        {
+            kind: "group" as const,
+            group: g.group,
+            focused: g.focused,
+            count: g.flows.length,
+        },
+        ...g.flows.map((flow) => ({ kind: "flow" as const, flow })),
+    ]);
+}
 
 type FlowTableState = {
     vScroll: VScroll;
@@ -93,6 +121,9 @@ export class PureFlowTable extends React.Component<
         // setState condition kept re-firing.
         if (
             prevProps.flowView !== this.props.flowView ||
+            // Focus folds group headers into the row list, so the virtual
+            // scroll window has to be recomputed when it changes.
+            prevProps.focusHosts !== this.props.focusHosts ||
             prevProps.rowHeight !== this.props.rowHeight ||
             // Widening past the viewport adds a horizontal scrollbar, which eats into the height the virtual scroll window is derived from.
             prevProps.columnWidths !== this.props.columnWidths
@@ -106,7 +137,8 @@ export class PureFlowTable extends React.Component<
             onlySelectedId && onlySelectedId !== prevProps.onlySelectedId;
 
         if (selectedPotentiallyOffscreenFlow) {
-            const { rowHeight, firstSelectedIndex } = this.props;
+            const { rowHeight } = this.props;
+            const firstSelectedIndex = this.rowIndexOf(this.props.firstSelectedId);
             const viewport = this.viewport.current!;
             const head = this.head.current;
 
@@ -135,7 +167,7 @@ export class PureFlowTable extends React.Component<
         const vScroll = calcVScroll({
             viewportTop,
             viewportHeight: viewport.offsetHeight || 0,
-            itemCount: this.props.flowView.length,
+            itemCount: this.rows().length,
             rowHeight: this.props.rowHeight,
         });
 
@@ -157,10 +189,25 @@ export class PureFlowTable extends React.Component<
         }
     }
 
+    /** Rows as rendered, i.e. with focus group headers folded in. */
+    rows(): TableRow[] {
+        return buildRows(this.props.flowView, this.props.focusHosts);
+    }
+
+    rowIndexOf(flowId: string | undefined): number | undefined {
+        if (flowId === undefined) {
+            return undefined;
+        }
+        const pos = this.rows().findIndex(
+            (row) => row.kind === "flow" && row.flow.id === flowId,
+        );
+        return pos === -1 ? undefined : pos;
+    }
+
     render() {
         const { vScroll, viewportTop } = this.state;
+        const rows = this.rows();
         const {
-            flowView,
             selectedIds,
             highlightedIds,
             displayColumnNames,
@@ -213,19 +260,44 @@ export class PureFlowTable extends React.Component<
                     </thead>
                     <tbody>
                         <tr style={{ height: vScroll.paddingTop }} />
-                        {flowView
-                            .slice(vScroll.start, vScroll.end)
-                            .map((flow) => (
+                        {rows.slice(vScroll.start, vScroll.end).map((row) =>
+                            row.kind === "group" ? (
+                                <tr
+                                    key={`group-${row.group}`}
+                                    className={
+                                        row.focused
+                                            ? "flow-group-row focused"
+                                            : "flow-group-row other"
+                                    }
+                                    style={{ height: rowHeight }}
+                                >
+                                    <td colSpan={orderedColumns.length + 1}>
+                                        <span className="flow-group-name">
+                                            {row.focused ? (
+                                                row.group
+                                            ) : (
+                                                <em>Other</em>
+                                            )}
+                                        </span>
+                                        <span className="flow-group-count">
+                                            {row.count}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ) : (
                                 <FlowRow
-                                    key={flow.id}
-                                    flow={flow}
-                                    selected={selectedIds.has(flow.id)}
-                                    highlighted={highlightedIds.has(flow.id)}
+                                    key={row.flow.id}
+                                    flow={row.flow}
+                                    selected={selectedIds.has(row.flow.id)}
+                                    highlighted={highlightedIds.has(
+                                        row.flow.id,
+                                    )}
                                     displayColumnNames={displayColumnNames}
-                                    rowNumber={listIndex.get(flow.id)!}
+                                    rowNumber={listIndex.get(row.flow.id)!}
                                     height={rowHeight}
                                 />
-                            ))}
+                            ),
+                        )}
                         <tr style={{ height: vScroll.paddingBottom }} />
                     </tbody>
                 </table>
@@ -236,11 +308,12 @@ export class PureFlowTable extends React.Component<
 
 export default connect((state: RootState) => ({
     flowView: state.flows.view,
+    focusHosts: state.ui.focus.hosts,
     highlightedIds: state.flows.highlightedIds,
     selectedIds: state.flows.selectedIds,
     onlySelectedId:
         state.flows.selected.length === 1 && state.flows.selected[0].id,
-    firstSelectedIndex: state.flows._viewIndex.get(state.flows.selected[0]?.id),
+    firstSelectedId: state.flows.selected[0]?.id,
     // Fetch column names once at the table level; avoids N identical
     // useAppSelector subscriptions inside each FlowRow.
     displayColumnNames: state.options.web_columns,

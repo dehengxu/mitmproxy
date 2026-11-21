@@ -81,6 +81,7 @@ export const testState: RootState = {
             [FilterName.Highlight]: "~u /path",
         },
         columnWidths: {},
+        focus: { hosts: [] },
     },
     options: defaultOptions,
     flows: {
