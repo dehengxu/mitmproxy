@@ -4,6 +4,8 @@ import {
     ENDPOINTS,
     fetchPending,
     fetchRules,
+    isStandalone,
+    owningRuleSetId,
     setRuleEnabled,
 } from "../../ducks/rewrite";
 import * as flowsActions from "../../ducks/flows";
@@ -347,5 +349,87 @@ describe("flow decisions", () => {
         // Cancel of a rule-backed flow is decided by the backend, not by a
         // client-side resume.
         expect(urls).not.toContain(`/flows/${flow.id}/resume`);
+    });
+});
+
+describe("rule set membership", () => {
+    // The backend runs `model_dump(exclude_none=True)`, so a standalone rule's
+    // payload has no `ruleset_id` key at all -- not `ruleset_id: null`. The
+    // contract calls this out; judging by truthiness would already work but
+    // judging by key presence is what the contract states, and it also holds
+    // if a null ever does appear.
+    it("treats a rule with no ruleset_id key as standalone", () => {
+        const standalone = {
+            id: "solo",
+            name: "Solo",
+            enabled: true,
+            filter: "~u price",
+            phase: "response",
+            actions: [],
+            decision: "execute",
+        };
+        expect("ruleset_id" in standalone).toBe(false);
+        expect(isStandalone(standalone)).toBe(true);
+        expect(owningRuleSetId(standalone)).toBeNull();
+    });
+
+    it("treats an explicit null ruleset_id as standalone too", () => {
+        const standalone = {
+            id: "solo",
+            name: "Solo",
+            enabled: true,
+            ruleset_id: null,
+            filter: "~u price",
+            phase: "response",
+            actions: [],
+            decision: "execute",
+        };
+        expect(isStandalone(standalone)).toBe(true);
+        expect(owningRuleSetId(standalone)).toBeNull();
+    });
+
+    it("treats a rule carrying a set id as a member", () => {
+        const member = {
+            id: "a",
+            name: "A",
+            enabled: true,
+            ruleset_id: "set-1",
+            filter: "~u api",
+            phase: "request",
+            actions: [],
+            decision: "execute",
+        };
+        expect(isStandalone(member)).toBe(false);
+        expect(owningRuleSetId(member)).toBe("set-1");
+    });
+
+    it("reads the real GET /rewrite/rules shape without a key on standalone rules", async () => {
+        const solo = {
+            id: "solo",
+            name: "Solo",
+            enabled: true,
+            filter: "~u price",
+            phase: "response",
+            actions: [],
+            decision: "execute",
+        };
+        const member = {
+            id: "a",
+            name: "A",
+            enabled: true,
+            ruleset_id: "set-1",
+            filter: "~u api",
+            phase: "request",
+            actions: [],
+            decision: "execute",
+        };
+        mocked.mockResolvedValueOnce(
+            okJson({ rules: [solo, member], rulesets: [] }),
+        );
+        const store = TStore();
+        const { rules } = await store.dispatch(fetchRules()).unwrap();
+
+        expect(rules.filter(isStandalone).map((rule) => rule.id)).toEqual(["solo"]);
+        expect(rules.filter((rule) => !isStandalone(rule)).map((rule) => rule.id)).toEqual(["a"]);
     });
 });

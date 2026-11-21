@@ -98,6 +98,25 @@ export interface PreviewEntry {
     skipped_by?: string | null;
 }
 
+/**
+ * True when a rule belongs to no rule set, i.e. it is standalone.
+ *
+ * The backend omits the key entirely for a standalone rule -- ``exclude_none``
+ * drops it, so the payload has no ``ruleset_id`` at all rather than
+ * ``ruleset_id: null`` (the frozen contract's own note, and what
+ * ``GET /rewrite/rules`` really answers). Presence of the key is therefore the
+ * test, not truthiness: a rule that carries ``null`` explicitly is standalone
+ * too, while a rule inside a set always carries its id.
+ */
+export function isStandalone(rule: RewriteRule): boolean {
+    return !("ruleset_id" in rule) || rule.ruleset_id == null;
+}
+
+/** The id of the set a rule lives in, or null when it is standalone. */
+export function owningRuleSetId(rule: RewriteRule): string | null {
+    return isStandalone(rule) ? null : (rule.ruleset_id ?? null);
+}
+
 export const ENDPOINTS = {
     pending: "/rewrite/pending",
     decide: "/rewrite/pending/decide",

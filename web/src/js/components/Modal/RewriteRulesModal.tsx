@@ -13,7 +13,7 @@ import type {
     RewriteRuleSet,
     RuleAction,
 } from "../../ducks/rewrite";
-import { errorMessage } from "../../ducks/rewrite";
+import { errorMessage, isStandalone } from "../../ducks/rewrite";
 import { useAppDispatch, useAppSelector } from "../../ducks";
 
 /**
@@ -121,7 +121,9 @@ export default function RewriteRulesModal() {
         }
     };
 
-    const standalone = rules.filter((rule) => !rule.ruleset_id);
+    // Standalone = the backend left the `ruleset_id` key off entirely; see
+    // isStandalone() for why presence, not truthiness, is the test.
+    const standalone = rules.filter(isStandalone);
 
     const startEdit = (rule: RewriteRule, setId: string | null) => {
         setDraft(ruleToDraft(rule));

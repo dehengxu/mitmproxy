@@ -12,11 +12,13 @@ function okJson(payload: unknown) {
     return { ok: true, json: async () => payload };
 }
 
+// The real GET /rewrite/rules payload: a standalone rule has no `ruleset_id`
+// key at all, because the backend dumps with exclude_none. Keeping the fixture
+// in the backend's own shape is what makes these tests catch a regression.
 const standalone = {
     id: "rule-solo",
     name: "Solo prices",
     enabled: true,
-    ruleset_id: null,
     filter: "~u price",
     phase: "response",
     actions: [{ type: "set_header", target: "response", name: "x-tier", value: "gold" }],
