@@ -34,6 +34,66 @@ export interface PendingDecision {
     path: string;
     method: string;
     created_at: string | number;
+    /**
+     * When the queue stops holding this request, in epoch seconds (the backend
+     * sends `created_at + 300`). Optional: a backend that predates the TTL says
+     * nothing and the row is treated as still decidable.
+     */
+    expire_at?: string | number | null;
+    /**
+     * The row's lifecycle state. Today only `"pending"` comes over the wire, so
+     * a missing or empty value means exactly that; anything else is shown as
+     * the reason the row can no longer be decided.
+     */
+    state?: string | null;
+}
+
+/** The queue's lifetime, as the backend enforces it. Shown, not enforced here. */
+export const PENDING_TTL_SECONDS = 300;
+
+function epochSeconds(value: string | number | null | undefined) {
+    if (value === undefined || value === null || value === "") return undefined;
+    const seconds =
+        typeof value === "number" ? value : Date.parse(value) / 1000;
+    return Number.isFinite(seconds) ? seconds : undefined;
+}
+
+/**
+ * Why a pending row can no longer be decided, or null while it still can.
+ *
+ * The UI only says what the backend already said: `state` other than
+ * `"pending"`, or a `now` past `expire_at`. A server that sends neither leaves
+ * the row decidable, which is what "absent means pending" is there for.
+ */
+export function pendingHoldReason(
+    entry: Pick<PendingDecision, "expire_at" | "state">,
+    nowSeconds: number,
+): string | null {
+    const state = entry.state;
+    if (
+        state !== undefined &&
+        state !== null &&
+        state !== "" &&
+        state !== "pending"
+    ) {
+        return state === "expired" ? "Expired" : `No longer pending (${state})`;
+    }
+    const expireAt = epochSeconds(entry.expire_at);
+    if (expireAt !== undefined && nowSeconds >= expireAt) {
+        return "Expired";
+    }
+    return null;
+}
+
+/** How long is left before the row expires, in seconds; undefined when unknown. */
+export function pendingSecondsLeft(
+    entry: Pick<PendingDecision, "expire_at" | "state">,
+    nowSeconds: number,
+): number | undefined {
+    if (pendingHoldReason(entry, nowSeconds) !== null) return 0;
+    const expireAt = epochSeconds(entry.expire_at);
+    if (expireAt === undefined) return undefined;
+    return Math.max(0, Math.round(expireAt - nowSeconds));
 }
 
 /**
@@ -143,8 +203,7 @@ export const DECISION_LABELS: Record<Decision, string> = {
 export const DECISION_TITLES: Record<Decision, string> = {
     execute: "Apply the edits to this flow and let it through",
     abort: "Kill this flow, nothing is forwarded to the client",
-    cancel:
-        "Cancel the breakpoint: drop the edits and let the flow through untouched; the rule stays enabled",
+    cancel: "Cancel the breakpoint: drop the edits and let the flow through untouched; the rule stays enabled",
 };
 
 /** Shown after a cancel, so that a still-active rule is not a surprise. */
@@ -244,13 +303,7 @@ export interface DecideResponse {
 
 export const decidePending = createAppAsyncThunk(
     "rewrite/decidePending",
-    async ({
-        token,
-        decision,
-    }: {
-        token: string;
-        decision: Decision;
-    }) => {
+    async ({ token, decision }: { token: string; decision: Decision }) => {
         const data = (await readJson(
             await fetchApi.post(ENDPOINTS.decide, { token, decision }),
         )) as DecideResponse | undefined;
@@ -260,9 +313,7 @@ export const decidePending = createAppAsyncThunk(
         // {"success": false, "error": "..."}. Dropping the row in that case
         // would hide a request that is still held, so it is a failure here.
         if (data && data.success === false) {
-            throw new Error(
-                data.error || "The decision could not be applied.",
-            );
+            throw new Error(data.error || "The decision could not be applied.");
         }
         return token;
     },
@@ -491,7 +542,9 @@ const rewriteSlice = createSlice({
                 // A rule inside a set has two copies on screen, so keep both
                 // in step rather than leaving the set's row stale.
                 for (const ruleset of state.rulesets) {
-                    const member = ruleset.rules.find((entry) => entry.id === id);
+                    const member = ruleset.rules.find(
+                        (entry) => entry.id === id,
+                    );
                     if (member) member.enabled = enabled;
                 }
                 if (state.notice?.ruleId === id && !enabled) {

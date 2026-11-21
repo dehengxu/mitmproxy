@@ -108,10 +108,49 @@
         word-break: break-all;
     }
 
+    .col-age {
+        white-space: nowrap;
+    }
+
     .col-decisions {
         text-align: right;
         white-space: nowrap;
     }
+
+    // A row the backend no longer holds: past its five-minute wait, or dropped
+    // because the client went away. Greyed rather than removed -- a request that
+    // is still held must stay visible, and a refused decision is shown against
+    // the row that was clicked.
+    tr.pending-expired {
+        color: var(--mitmweb-fg-muted);
+
+        .badge {
+            opacity: 0.6;
+        }
+
+        .col-request a:hover {
+            text-decoration: none;
+        }
+    }
+}
+
+.pending-age {
+    color: var(--mitmweb-fg-muted);
+}
+
+// The reason sits under the waiting time, in the column that already answers
+// "how long has this been here".
+.pending-hold-reason {
+    display: block;
+    color: var(--mitmweb-text-warning);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pending-expires-in {
+    display: block;
+    color: var(--mitmweb-fg-muted);
+    font-size: 11px;
 }
 
 @media (max-width: 767px) {
