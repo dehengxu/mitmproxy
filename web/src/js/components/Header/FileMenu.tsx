@@ -56,6 +56,14 @@ export default React.memo(function FileMenu() {
                 <Divider />
                 <MenuItem
                     onClick={() =>
+                        dispatch(modalActions.setActiveModal("RewriteRulesModal"))
+                    }
+                >
+                    <Icon name="braces" />
+                    &nbsp;Rewrite Rules…
+                </MenuItem>
+                <MenuItem
+                    onClick={() =>
                         dispatch(
                             modalActions.setActiveModal(
                                 "CertificateGuideModal",

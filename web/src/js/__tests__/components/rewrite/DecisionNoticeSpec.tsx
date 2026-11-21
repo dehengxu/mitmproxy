@@ -149,7 +149,11 @@ describe("setRuleEnabled", () => {
             statusText: "Server Error",
         });
         const store = TStore();
-        store.dispatch({ type: "rewrite/fetchRules/fulfilled", payload: [rule] });
+        store.dispatch({
+        type: "rewrite/fetchRules/fulfilled",
+        // fetchRules reads rules and rule sets in one call (REQ-6.2).
+        payload: { rules: [rule], rulesets: [] },
+    });
 
         const result = await store.dispatch(
             setRuleEnabled({ id: "rule-1", enabled: false }),

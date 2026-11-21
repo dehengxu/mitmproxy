@@ -184,3 +184,365 @@
         flex-wrap: wrap;
     }
 }
+
+// REQ-6.2: the rule manager. Three levels in one dialog -- rule sets, the rules
+// inside a set, and the inline editor -- with both orders adjustable because
+// "first rule to claim a field wins" makes order the thing that matters.
+
+.rewrite-rules-modal {
+    .modal-body {
+        // The modal already caps its height; this keeps the dialog from
+        // jumping around as sets are expanded.
+        min-height: 40vh;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        padding: 3px 6px;
+        border: 1px solid var(--mitmweb-border);
+        border-radius: 3px;
+        background-color: var(--mitmweb-bg);
+        color: var(--mitmweb-fg-input);
+    }
+}
+
+.rules-section + .rules-section {
+    margin-top: 20px;
+}
+
+.rules-section-title {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+
+    .text-small {
+        font-weight: 400;
+    }
+}
+
+.rewrite-rules-table {
+    width: 100%;
+    margin-bottom: 8px;
+    border-collapse: collapse;
+
+    td {
+        padding: 5px 6px;
+        vertical-align: top;
+        border-top: 1px solid var(--mitmweb-border-lighter);
+    }
+
+    .col-order {
+        width: 2.2em;
+        color: var(--mitmweb-fg-muted);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .col-rule {
+        word-break: break-word;
+    }
+
+    .col-buttons {
+        width: 1%;
+        white-space: nowrap;
+        text-align: right;
+
+        > * {
+            margin-left: 3px;
+            vertical-align: middle;
+        }
+    }
+
+    code {
+        padding: 1px 4px;
+        border-radius: 3px;
+        background-color: var(--mitmweb-bg-alt);
+        font-size: 90%;
+    }
+
+    tr.rule-disabled {
+        .rule-name {
+            opacity: 0.55;
+        }
+    }
+
+    .rule-move {
+        max-width: 130px;
+        font-size: 12px;
+    }
+
+    .rule-enabled-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        margin: 0 4px 0 0;
+        font-size: 12px;
+        font-weight: 400;
+    }
+}
+
+// A rule that only ever appears inside a set: the set's master switch is what
+// decides whether it runs, so it is named next to the toggle.
+.ruleset {
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    border: 1px solid var(--mitmweb-border-light);
+    border-radius: 4px;
+
+    &.ruleset-disabled {
+        background-color: var(--mitmweb-bg-alt);
+    }
+}
+
+.ruleset-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    .ruleset-name {
+        flex: 1 1 180px;
+        min-width: 120px;
+        font-weight: 600;
+    }
+
+    .ruleset-master-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .ruleset-buttons {
+        display: inline-flex;
+        gap: 3px;
+    }
+}
+
+.ruleset-disabled-note {
+    margin: 6px 0 0;
+    font-style: italic;
+}
+
+.ruleset-add-rule {
+    margin-top: 4px;
+}
+
+.ruleset-new {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+
+    input {
+        flex: 0 1 220px;
+    }
+}
+
+.rewrite-rules-footer {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+}
+
+// The inline rule editor sits under the list it belongs to, so an edit never
+// hides the order it is about to be part of.
+.rule-editor {
+    margin-top: 20px;
+    padding: 10px 12px;
+    border: 1px solid var(--mitmweb-border);
+    border-left: 3px solid var(--mitmweb-accent);
+    border-radius: 4px;
+    background-color: var(--mitmweb-bg-alt);
+}
+
+.rule-editor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+
+        span {
+            color: var(--mitmweb-fg-muted);
+        }
+    }
+
+    label:first-child,
+    label:nth-child(2) {
+        flex: 1 1 220px;
+    }
+
+    .rule-editor-inline-check {
+        flex-direction: row;
+        align-items: center;
+        align-self: flex-end;
+        gap: 4px;
+    }
+}
+
+.rule-editor-subtitle {
+    margin: 14px 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.rule-editor-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+}
+
+// One action of a rule.
+.action-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-row {
+    padding: 6px 8px;
+    border: 1px solid var(--mitmweb-border-light);
+    border-radius: 4px;
+    background-color: var(--mitmweb-bg);
+}
+
+.action-row-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    .action-index {
+        color: var(--mitmweb-fg-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .action-writes {
+        flex: 1 1 auto;
+    }
+
+    .action-row-buttons {
+        display: inline-flex;
+        gap: 3px;
+    }
+}
+
+.action-row-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 6px;
+
+    .action-field {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+
+        span {
+            color: var(--mitmweb-fg-muted);
+        }
+    }
+}
+
+.action-summary {
+    margin: 6px 0 0;
+    font-family: monospace;
+}
+
+// The hit preview under the editor: order in, order out.
+.hit-preview {
+    padding: 8px 10px;
+    border: 1px dashed var(--mitmweb-border);
+    border-radius: 4px;
+    background-color: var(--mitmweb-bg);
+}
+
+.hit-preview-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+    }
+}
+
+.hit-preview-table {
+    width: 100%;
+    margin-top: 8px;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 4px 6px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        border-bottom: 1px solid var(--mitmweb-border);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    tbody tr + tr {
+        border-top: 1px solid var(--mitmweb-border-lighter);
+    }
+
+    .col-order {
+        width: 2.2em;
+        color: var(--mitmweb-fg-muted);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    tr.hit-preview-current {
+        background-color: var(--mitmweb-bg-hover);
+    }
+
+    .hit-preview-set {
+        margin-left: 5px;
+        font-size: 10px;
+    }
+}
+
+// Small screens: the rule table keeps its order column and buttons but lets the
+// description wrap rather than forcing the dialog wider than the window.
+@media (max-width: 767px) {
+    .rewrite-rules-table {
+        .col-buttons {
+            white-space: normal;
+
+            > * {
+                margin: 2px 0 2px 3px;
+            }
+        }
+
+        .rule-button-label {
+            display: none;
+        }
+    }
+
+    .rule-editor-grid {
+        flex-direction: column;
+    }
+}

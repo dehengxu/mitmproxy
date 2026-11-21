@@ -4,6 +4,7 @@ import OptionContent from "./OptionModal";
 import ThrottleModalContent from "./ThrottleModal";
 import CertificateGuideModalContent from "./CertificateGuideModal";
 import PendingDecisionModalContent from "./PendingDecisionModal";
+import RewriteRulesModalContent from "./RewriteRulesModal";
 
 function OptionModal() {
     return (
@@ -35,6 +36,14 @@ function ThrottleModal() {
     );
 }
 
+function RewriteRulesModal() {
+    return (
+        <ModalLayout id="rewriteRulesModal" labelledBy="rewrite-rules-title">
+            <RewriteRulesModalContent />
+        </ModalLayout>
+    );
+}
+
 function CertificateGuideModal() {
     return (
         <ModalLayout
@@ -51,4 +60,5 @@ export default {
     ThrottleModal,
     CertificateGuideModal,
     PendingDecisionModal,
+    RewriteRulesModal,
 };

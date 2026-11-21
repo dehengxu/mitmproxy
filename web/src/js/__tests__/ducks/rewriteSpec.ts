@@ -124,7 +124,11 @@ describe("rewrite duck", () => {
 
     it("tells the user the rule is still enabled after cancel, and can disable it", async () => {
         const store = TStore();
-        store.dispatch({ type: "rewrite/fetchRules/fulfilled", payload: [rule] });
+        store.dispatch({
+        type: "rewrite/fetchRules/fulfilled",
+        // fetchRules reads rules and rule sets in one call (REQ-6.2).
+        payload: { rules: [rule], rulesets: [] },
+    });
 
         await store.dispatch(decidePendingEntry(pending(), "cancel"));
 

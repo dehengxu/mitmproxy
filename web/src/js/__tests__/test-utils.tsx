@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { TStore } from "./ducks/tutils";
 
 // re-export everything
-export { waitFor, fireEvent, act, screen } from "@testing-library/react";
+export { waitFor, fireEvent, act, screen, within } from "@testing-library/react";
 export { userEvent };
 
 export function render(ui, { store = TStore(), ...renderOptions } = {}) {

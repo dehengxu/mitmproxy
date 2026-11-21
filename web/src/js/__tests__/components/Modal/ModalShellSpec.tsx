@@ -25,6 +25,7 @@ describe.each([
     ["ThrottleModal", "Throttle"],
     ["CertificateGuideModal", "Install Certificates"],
     ["PendingDecisionModal", "Pending decisions"],
+    ["RewriteRulesModal", "Rewrite rules"],
 ])("%s shell", (modal, heading) => {
     it("renders as a dialog with a backdrop over the page", async () => {
         const { store } = render(<Modal />);
